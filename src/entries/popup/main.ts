@@ -1,10 +1,26 @@
-import logo from "~/assets/logo.svg";
-import "./style.css";
+import browser from "webextension-polyfill";
 
-const imageUrl = new URL(logo, import.meta.url).href;
+window.addEventListener("load", async () => {
+  console.log("done: load");
+});
 
-document.querySelector("#app")!.innerHTML = `
-  <img src="${imageUrl}" height="45" alt="" />
-  <h1>Popup</h1>
-  <a href="https://vitejs.dev/guide/features.html" target="_blank">Vite Docs</a>
-`;
+(async () => {
+  let aux = [];
+  if (import.meta.env.VITE_VARIANT_QUERY_TABS) {
+    const [tab] = await browser.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
+    aux.push(`tab: ${tab?.url}`);
+  }
+
+  if (import.meta.env.VITE_VARIANT_SETTIMEOUT) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    aux.push("slept well");
+  }
+
+  console.log("set html");
+  document.querySelector("#app")!.innerHTML = `${aux.join(
+    ";"
+  )}<iframe src="https://httpbin.org/delay/3"></iframe>`;
+})();
